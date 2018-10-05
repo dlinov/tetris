@@ -1,30 +1,37 @@
 package com.github.nikalaikina.tetris
 
 import com.github.nikalaikina.tetris.Matrix.{Coordinate, Tetrominoe}
-
+import Constants._
 import scala.util.Random
-
 
 case class Matrix(
   current: Tetrominoe = Tetrominoe(),
-  ground: Set[Coordinate] = (0 until 10).map(Coordinate(20, _)).toSet
+  ground: Set[Coordinate] = Set.empty
 ) {
   lazy val cells: Set[Matrix.Coordinate] = ground ++ current.cells
   def show = {
-    (0 until 20).map { i =>
-      (0 until 10).map { j =>
+    (0 until rows).map { i =>
+      (0 until columns).map { j =>
         cells.contains((i, j))
       }
     }
   }
 
   lazy val isSolid: Boolean = {
-    current.inc.cells.exists(ground.contains)
+    val wholeGround: Set[Coordinate] = Matrix.fakeGround ++ ground
+    current.inc.cells.exists(wholeGround.contains)
   }
 
   lazy val down: Matrix = {
     if (isSolid) {
-      Matrix(Tetrominoe(), ground ++ current.cells)
+      val remove = cells.groupBy(_.row).filter(_._2.size == columns).keys
+      val newGround = remove.foldLeft(cells) {
+        case (acc, row) =>
+          acc.filter(_.row != row).map { c =>
+            if (c.row < row) c.inc else c
+          }
+      }
+      Matrix(Tetrominoe(), newGround)
     } else {
       Matrix(current.inc, ground)
     }
@@ -37,6 +44,8 @@ case class Matrix(
 }
 
 object Matrix {
+
+  val fakeGround: Set[Coordinate] = (0 until 10).map(Coordinate(rows - 1, _)).toSet
 
   val figures: Vector[Vector[Vector[Boolean]]] = {
     val o = false
@@ -64,31 +73,64 @@ object Matrix {
     )
   }
 
-  case class Tetrominoe(figure: Int, c: Coordinate) {
-    import c._
-    lazy val t = figures(figure)
+  def transpose[T](matrix: Vector[Vector[T]]): Vector[Vector[T]] = {
+    matrix.head.indices.map(i => matrix.map(_(i))).toVector
+  }
+
+  def rotate[T](matrix: Vector[Vector[T]]): Vector[Vector[T]] = {
+    transpose(matrix).map(_.reverse)
+  }
+
+  def rotate[T](matrix: Vector[Vector[T]], n: Int): Vector[Vector[T]] = {
+    if (n % 4 == 0) {
+      matrix
+    } else {
+      rotate(rotate(matrix), n - 1)
+    }
+  }
+
+  case class Tetrominoe(figure: Int, c: Coordinate, turn: Int) {
+    lazy val t = rotate(figures(figure), turn)
     def cells: Vector[Coordinate] = for {
       (row, i) <- t.zipWithIndex
       (is, j) <- row.zipWithIndex
       if is
-    } yield Coordinate(i + y, j + x)
-    def inc = Tetrominoe(figure, c.inc)
+    } yield Coordinate(i + c.row, j + c.column)
 
-    def move(k: Key) = k match {
-      case Left  => Tetrominoe(figure, (x - 1, y))
-      case Right => Tetrominoe(figure, (x + 1, y))
-      case Up    => this // TODO: turn
+    def inc = copy(c = c.inc)
+
+    def move(k: Key) = {
+      val suggestion = k match {
+        case Left  => copy(c = c.copy(column = c.column - 1))
+        case Right => copy(c = c.copy(column = c.column + 1))
+        case Up    => copy(turn = turn + 1)
+      }
+      if (suggestion.isCorrect) {
+        suggestion
+      } else {
+        this
+      }
     }
+
+    def isCorrect: Boolean = cells.forall(_.isCorrect)
   }
 
   object Tetrominoe {
-    def apply(): Tetrominoe = Tetrominoe(Random.nextInt(figures.size), Coordinate(4, 0))
+    def apply(): Tetrominoe = Tetrominoe(Random.nextInt(figures.size), Coordinate(0, 4), 0)
   }
 
   implicit def toCoordinate(t: (Int, Int)): Coordinate = Coordinate(t._1, t._2)
 
-  case class Coordinate(x: Int, y: Int) {
-    def inc = Coordinate(x, y + 1)
+  case class Coordinate(row: Int, column: Int) {
+    def inc = copy(row = row + 1)
+
+    def isCorrect: Boolean = {
+      column >= 0 && column < columns && row <= rows
+    }
   }
 }
 
+object Constants {
+  val rows = 20
+  val columns = 10
+}

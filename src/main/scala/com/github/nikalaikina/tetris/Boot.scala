@@ -13,7 +13,6 @@ object Boot extends App {
   import monix.execution.Scheduler.Implicits.global
 
   def clear() = "clear".!
-  clear()
 
   val downObservable = Observable.interval(1 second).as(Tick)
 
