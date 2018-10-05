@@ -1,18 +1,15 @@
 package com.github.nikalaikina.tetris
 
-import cats.data.State
-import com.github.nikalaikina.tetris.Matrix.{Coordinate, Tetrominoe, figures}
+import com.github.nikalaikina.tetris.Matrix.{Coordinate, Tetrominoe}
 
 import scala.util.Random
 
 
 case class Matrix(
-  tetrominoes: Vector[Tetrominoe] = Vector.empty
+  current: Tetrominoe = Tetrominoe(),
+  ground: Set[Coordinate] = (0 until 10).map(Coordinate(20, _)).toSet
 ) {
-  lazy val current = tetrominoes.headOption
-  lazy val tail = tetrominoes.tail
-  lazy val ground: Set[Coordinate] = Matrix(tail).cells ++ (0 until 10).map(Coordinate(20, _))
-  lazy val cells: Set[Matrix.Coordinate] = tetrominoes.flatMap(_.cells).toSet
+  lazy val cells: Set[Matrix.Coordinate] = ground ++ current.cells
   def show = {
     (0 until 20).map { i =>
       (0 until 10).map { j =>
@@ -22,22 +19,20 @@ case class Matrix(
   }
 
   lazy val isSolid: Boolean = {
-    current.forall(_.inc.cells.exists(ground.contains))
+    current.inc.cells.exists(ground.contains)
   }
 
   lazy val down: Matrix = {
     if (isSolid) {
-      val next = Random.nextInt(figures.size)
-      val newT = Tetrominoe(next, Coordinate(4, 0))
-      Matrix(newT +: tetrominoes)
+      Matrix(Tetrominoe(), ground ++ current.cells)
     } else {
-      Matrix(current.map(_.inc).toVector ++ tail)
+      Matrix(current.inc, ground)
     }
   }
   def move(k: Key) = if (k == Down) {
     down
   } else {
-    Matrix(current.map(_.move(k)).toVector ++ tail)
+    Matrix(current.move(k), ground)
   }
 }
 
@@ -86,7 +81,9 @@ object Matrix {
     }
   }
 
-
+  object Tetrominoe {
+    def apply(): Tetrominoe = Tetrominoe(Random.nextInt(figures.size), Coordinate(4, 0))
+  }
 
   implicit def toCoordinate(t: (Int, Int)): Coordinate = Coordinate(t._1, t._2)
 

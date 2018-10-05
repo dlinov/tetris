@@ -1,15 +1,13 @@
 package com.github.nikalaikina.tetris
 
-import scala.sys.process._
-import monix.reactive._
-
-import scala.concurrent.duration._
 import cats.syntax.functor._
 import monix.execution.Cancelable
+import monix.reactive._
 import monix.reactive.observers.Subscriber
 
 import scala.concurrent.Await
-import scala.util.Try
+import scala.concurrent.duration._
+import scala.sys.process._
 
 object Boot extends App {
   import monix.execution.Scheduler.Implicits.global
@@ -37,7 +35,6 @@ object Boot extends App {
 
 
   Await.result(merged.runAsyncGetLast, 5 minutes)
-//  Await.result(test.runAsyncGetLast, 5 minutes)
 }
 
 sealed trait Action
