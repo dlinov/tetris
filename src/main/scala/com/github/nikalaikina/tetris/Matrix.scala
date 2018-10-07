@@ -6,7 +6,8 @@ import scala.util.Random
 
 case class Matrix(
   current: Tetrominoe = Tetrominoe(),
-  ground: Set[Coordinate] = Set.empty
+  ground: Set[Coordinate] = Set.empty,
+  score: Int = 0
 ) {
   lazy val cells: Set[Matrix.Coordinate] = ground ++ current.cells
   def show = {
@@ -31,15 +32,15 @@ case class Matrix(
             if (c.row < row) c.inc else c
           }
       }
-      Matrix(Tetrominoe(), newGround)
+      Matrix(Tetrominoe(), newGround, score + remove.size)
     } else {
-      Matrix(current.inc, ground)
+      Matrix(current.inc, ground, score)
     }
   }
   def move(k: Key) = if (k == Down) {
     down
   } else {
-    Matrix(current.move(k), ground)
+    Matrix(current.move(k), ground, score)
   }
 }
 

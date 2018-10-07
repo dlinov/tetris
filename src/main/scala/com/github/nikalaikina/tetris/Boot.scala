@@ -30,6 +30,7 @@ object Boot extends App {
     } map { x =>
       clear()
       x.show.flatMap(x => Seq(x, x)).map(_.map(if (_) "###" else "   ").mkString("")).foreach(println)
+      println(x.score)
     }
 
 
