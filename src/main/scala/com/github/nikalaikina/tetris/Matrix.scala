@@ -40,7 +40,12 @@ case class Matrix(
   def move(k: Key) = if (k == Down) {
     down
   } else {
-    Matrix(current.move(k), ground, score)
+    val moved = current.move(k)
+    if (moved.isCorrect && !moved.cells.exists(ground.contains)) {
+      Matrix(moved, ground, score)
+    } else {
+      this
+    }
   }
 }
 
@@ -100,17 +105,10 @@ object Matrix {
 
     def inc = copy(c = c.inc)
 
-    def move(k: Key) = {
-      val suggestion = k match {
-        case Left  => copy(c = c.copy(column = c.column - 1))
-        case Right => copy(c = c.copy(column = c.column + 1))
-        case Up    => copy(turn = turn + 1)
-      }
-      if (suggestion.isCorrect) {
-        suggestion
-      } else {
-        this
-      }
+    def move(k: Key) = k match {
+      case Left  => copy(c = c.copy(column = c.column - 1))
+      case Right => copy(c = c.copy(column = c.column + 1))
+      case Up    => copy(turn = turn + 1)
     }
 
     def isCorrect: Boolean = cells.forall(_.isCorrect)
