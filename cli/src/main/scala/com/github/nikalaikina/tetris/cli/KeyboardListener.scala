@@ -1,6 +1,8 @@
-package com.github.nikalaikina.tetris
+package com.github.nikalaikina.tetris.cli
 
 import java.awt.event.{KeyEvent, KeyListener}
+
+import com.github.nikalaikina.tetris._
 import javax.swing.JFrame
 
 class KeyboardListener[T](push: Key => T) extends JFrame("") with KeyListener {
@@ -20,9 +22,3 @@ class KeyboardListener[T](push: Key => T) extends JFrame("") with KeyListener {
   override def keyTyped(e: KeyEvent): Unit = { }
 
 }
-
-sealed trait Key
-case object Left  extends Key
-case object Right extends Key
-case object Up    extends Key
-case object Down  extends Key

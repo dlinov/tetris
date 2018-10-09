@@ -1,6 +1,7 @@
-package com.github.nikalaikina.tetris
+package com.github.nikalaikina.tetris.cli
 
 import cats.syntax.functor._
+import com.github.nikalaikina.tetris._
 import monix.execution.Cancelable
 import monix.reactive._
 import monix.reactive.observers.Subscriber
@@ -14,18 +15,18 @@ object Boot extends App {
 
   def clear() = "clear".!
 
-  val downObservable = Observable.interval(1 second).as(Tick)
+  val downObservable = Observable.interval(1 second).as(Matrix.Tick)
 
-  val keyboardListener = Observable.create(OverflowStrategy.DropOld(10)) { f: Subscriber.Sync[KeyPressed] =>
-    val keyboardListener = new KeyboardListener(key => f.onNext(KeyPressed(key)))
+  val keyboardListener = Observable.create(OverflowStrategy.DropOld(10)) { f: Subscriber.Sync[Matrix.KeyPressed] =>
+    val keyboardListener = new KeyboardListener(key => f.onNext(Matrix.KeyPressed(key)))
     Cancelable(() => keyboardListener.dispose())
   }
 
   val merged: Observable[Unit] = Observable.merge(downObservable, keyboardListener)
     .scan(Matrix()) {
-      case (m, Tick) =>
+      case (m, Matrix.Tick) =>
         m.down
-      case (m, KeyPressed(key)) =>
+      case (m, Matrix.KeyPressed(key)) =>
         m.move(key)
     } map { x =>
       clear()
@@ -36,7 +37,3 @@ object Boot extends App {
 
   Await.result(merged.runAsyncGetLast, 5 minutes)
 }
-
-sealed trait Action
-case object Tick extends Action
-case class KeyPressed(k: Key) extends Action
