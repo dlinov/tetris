@@ -23,10 +23,6 @@ val scalaTagsVersion = "0.6.7"
 val logbackVersion = "1.2.3"
 val monixVersion = "3.0.0-RC1"
 
-lazy val cli = (project in file("cli"))
-  .dependsOn(shared.jvm)
-  .settings(sharedSettings)
-
 lazy val frontend = (project in file("frontend"))
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(shared.js)
