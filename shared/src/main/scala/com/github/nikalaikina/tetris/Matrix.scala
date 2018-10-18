@@ -109,6 +109,7 @@ object Matrix {
       case Left  => copy(c = c.copy(column = c.column - 1))
       case Right => copy(c = c.copy(column = c.column + 1))
       case Up    => copy(turn = turn + 1)
+      case _     => this
     }
 
     def isCorrect: Boolean = cells.forall(_.isCorrect)
@@ -127,9 +128,10 @@ object Matrix {
       column >= 0 && column < columns && row <= rows
     }
   }
-}
 
-object Constants {
-  val rows = 20
-  val columns = 10
+  sealed trait Action
+
+  case object Tick extends Action
+
+  case class KeyPressed(k: Key) extends Action
 }

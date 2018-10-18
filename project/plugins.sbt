@@ -1,1 +1,8 @@
 addSbtPlugin("org.lyranthe.sbt" % "partial-unification" % "1.1.2")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.0")
+//addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "0.6.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.25")
+//addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.3.8")
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.9.1")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.3")
